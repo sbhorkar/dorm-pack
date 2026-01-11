@@ -217,7 +217,58 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_shared_list: {
+        Args: { p_list_id: string; p_token: string }
+        Returns: {
+          allow_editing: boolean
+          allow_suggestions: boolean
+          created_at: string
+          description: string
+          id: string
+          is_shared: boolean
+          name: string
+          share_token: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
+      get_shared_list_categories: {
+        Args: { p_list_id: string; p_token: string }
+        Returns: {
+          created_at: string
+          id: string
+          list_id: string
+          name: string
+          sort_order: number
+        }[]
+      }
+      get_shared_list_items: {
+        Args: { p_list_id: string; p_token: string }
+        Returns: {
+          category_id: string
+          created_at: string
+          id: string
+          is_bought: boolean
+          is_packed: boolean
+          name: string
+          notes: string
+          price: number
+          size: string
+          sort_order: number
+          store_link: string
+          updated_at: string
+        }[]
+      }
+      submit_list_suggestion: {
+        Args: {
+          p_category_name?: string
+          p_item_name: string
+          p_list_id: string
+          p_notes?: string
+          p_token: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { categoryTemplates, inferItemSize } from '@/lib/colleges';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,7 +20,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   ArrowLeft,
-  Plus,
   Package,
   ShoppingCart,
   Check,
@@ -47,6 +45,8 @@ interface PackingList {
 interface Category {
   id: string;
   name: string;
+  list_id: string;
+  sort_order: number;
 }
 
 interface Item {
@@ -91,51 +91,37 @@ export default function SharedListPage() {
   }, [listId, token]);
 
   const fetchList = async () => {
-    if (!listId) return;
+    if (!listId || !token) {
+      setIsLoading(false);
+      return;
+    }
 
-    // Fetch list
+    // Use RPC function to fetch list with server-side token validation
     const { data: listData, error: listError } = await supabase
-      .from('packing_lists')
-      .select('*')
-      .eq('id', listId)
-      .single();
+      .rpc('get_shared_list', { p_list_id: listId, p_token: token });
 
-    if (listError || !listData) {
+    if (listError || !listData || listData.length === 0) {
       setIsLoading(false);
       return;
     }
 
-    // Verify access
-    if (!listData.is_shared || !listData.share_token || listData.share_token !== token) {
-      setIsLoading(false);
-      return;
-    }
-
-    setList(listData);
+    const listInfo = listData[0] as PackingList;
+    setList(listInfo);
     setHasAccess(true);
 
-    // Fetch categories
+    // Fetch categories using RPC with token validation
     const { data: categoriesData } = await supabase
-      .from('categories')
-      .select('*')
-      .eq('list_id', listId)
-      .order('sort_order');
+      .rpc('get_shared_list_categories', { p_list_id: listId, p_token: token });
 
-    if (categoriesData) {
-      setCategories(categoriesData);
+    if (categoriesData && categoriesData.length > 0) {
+      setCategories(categoriesData as Category[]);
 
-      // Fetch items
-      const categoryIds = categoriesData.map(c => c.id);
-      if (categoryIds.length > 0) {
-        const { data: itemsData } = await supabase
-          .from('items')
-          .select('*')
-          .in('category_id', categoryIds)
-          .order('sort_order');
+      // Fetch items using RPC with token validation
+      const { data: itemsData } = await supabase
+        .rpc('get_shared_list_items', { p_list_id: listId, p_token: token });
 
-        if (itemsData) {
-          setItems(itemsData);
-        }
+      if (itemsData) {
+        setItems(itemsData as Item[]);
       }
     }
 
@@ -148,15 +134,29 @@ export default function SharedListPage() {
       return;
     }
 
-    const { error } = await supabase
-      .from('list_suggestions')
-      .insert({
-        list_id: listId,
-        item_name: suggestionData.itemName,
-        category_name: suggestionData.categoryName || null,
-        notes: suggestionData.notes || null,
-        suggested_by: user?.id || null,
+    // Require authentication for suggestions
+    if (!user) {
+      toast({ 
+        title: 'Sign in required', 
+        description: 'Please create an account to suggest items',
+        variant: 'destructive' 
       });
+      return;
+    }
+
+    if (!token) {
+      toast({ title: 'Invalid share link', variant: 'destructive' });
+      return;
+    }
+
+    // Use RPC function with server-side token validation
+    const { error } = await supabase.rpc('submit_list_suggestion', {
+      p_list_id: listId,
+      p_token: token,
+      p_item_name: suggestionData.itemName,
+      p_category_name: suggestionData.categoryName || null,
+      p_notes: suggestionData.notes || null,
+    });
 
     if (error) {
       toast({ title: 'Failed to submit suggestion', variant: 'destructive' });
@@ -446,48 +446,66 @@ export default function SharedListPage() {
               Suggest an Item
             </DialogTitle>
             <DialogDescription>
-              Suggest an item to add to this list. The owner will review your suggestion.
+              {user 
+                ? 'Suggest an item to add to this list. The owner will review your suggestion.'
+                : 'Please sign in to suggest items to this list.'}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label htmlFor="itemName">Item Name *</Label>
-              <Input
-                id="itemName"
-                value={suggestionData.itemName}
-                onChange={(e) => setSuggestionData(prev => ({ ...prev, itemName: e.target.value }))}
-                placeholder="e.g., Desk Lamp"
-                autoFocus
-              />
+          {user ? (
+            <div className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="itemName">Item Name *</Label>
+                <Input
+                  id="itemName"
+                  value={suggestionData.itemName}
+                  onChange={(e) => setSuggestionData(prev => ({ ...prev, itemName: e.target.value }))}
+                  placeholder="e.g., Desk Lamp"
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="categoryName">Category (optional)</Label>
+                <Input
+                  id="categoryName"
+                  value={suggestionData.categoryName}
+                  onChange={(e) => setSuggestionData(prev => ({ ...prev, categoryName: e.target.value }))}
+                  placeholder="e.g., Desk"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes (optional)</Label>
+                <Textarea
+                  id="notes"
+                  value={suggestionData.notes}
+                  onChange={(e) => setSuggestionData(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Why you think they need this..."
+                  rows={2}
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setIsSuggestDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSuggestItem}>
+                  Submit Suggestion
+                </Button>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="categoryName">Category (optional)</Label>
-              <Input
-                id="categoryName"
-                value={suggestionData.categoryName}
-                onChange={(e) => setSuggestionData(prev => ({ ...prev, categoryName: e.target.value }))}
-                placeholder="e.g., Desk"
-              />
+          ) : (
+            <div className="space-y-4 pt-2">
+              <p className="text-muted-foreground">
+                Create a free account to suggest items to shared lists.
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsSuggestDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => navigate('/')}>
+                  Sign In
+                </Button>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
-              <Textarea
-                id="notes"
-                value={suggestionData.notes}
-                onChange={(e) => setSuggestionData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Why you think they need this..."
-                rows={2}
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setIsSuggestDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSuggestItem}>
-                Submit Suggestion
-              </Button>
-            </div>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
