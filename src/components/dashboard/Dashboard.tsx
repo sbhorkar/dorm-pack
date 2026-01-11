@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { usePackingLists } from '@/hooks/usePackingLists';
-import { SettingsDialog } from '@/components/settings/SettingsDialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { usePackingLists } from "@/hooks/usePackingLists";
+import { SettingsDialog } from "@/components/settings/SettingsDialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -15,40 +15,40 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { 
-  Plus, 
-  Package, 
-  MoreVertical, 
-  Trash2, 
-  LogOut, 
-  Loader2, 
-  Settings, 
+} from "@/components/ui/dropdown-menu";
+import {
+  Plus,
+  Package,
+  MoreVertical,
+  Trash2,
+  LogOut,
+  Loader2,
+  Settings,
   GraduationCap,
   Sparkles,
-  Share2
-} from 'lucide-react';
+  Share2,
+} from "lucide-react";
 
 export function Dashboard() {
   const { user, signOut } = useAuth();
   const { selectedCollege } = useTheme();
   const navigate = useNavigate();
   const { lists, isLoading, createList, deleteList } = usePackingLists();
-  const [newListName, setNewListName] = useState('');
+  const [newListName, setNewListName] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleCreateList = async () => {
     if (!newListName.trim()) return;
     await createList.mutateAsync(newListName);
-    setNewListName('');
+    setNewListName("");
     setIsDialogOpen(false);
   };
 
@@ -75,9 +75,7 @@ export function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground hidden sm:block">
-              {user?.email}
-            </span>
+            <span className="text-sm text-muted-foreground hidden sm:block">{user?.email}</span>
             <Button variant="ghost" size="icon" onClick={() => setIsSettingsOpen(true)}>
               <Settings className="h-4 w-4" />
             </Button>
@@ -98,9 +96,7 @@ export function Dashboard() {
                 My Packing Lists
                 <Sparkles className="h-6 w-6 text-primary" />
               </h1>
-              <p className="text-muted-foreground mt-1">
-                Organize your dorm essentials and share with family
-              </p>
+              <p className="text-muted-foreground mt-1">Organize your dorm essentials and share with family</p>
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -116,16 +112,14 @@ export function Dashboard() {
                     <GraduationCap className="h-5 w-5 text-primary" />
                     Create New Packing List
                   </DialogTitle>
-                  <DialogDescription>
-                    Give your list a name to get started
-                  </DialogDescription>
+                  <DialogDescription>Give your list a name to get started</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   <Input
-                    placeholder="e.g., Fall 2025 Move-In"
+                    placeholder="e.g., Fall 2026 Move-In"
                     value={newListName}
                     onChange={(e) => setNewListName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateList()}
+                    onKeyDown={(e) => e.key === "Enter" && handleCreateList()}
                     autoFocus
                   />
                   <div className="flex justify-end gap-2">
@@ -157,10 +151,7 @@ export function Dashboard() {
               <p className="text-muted-foreground mb-6 text-center max-w-sm">
                 Create your first packing list and start organizing your dorm essentials
               </p>
-              <Button 
-                onClick={() => setIsDialogOpen(true)}
-                className="gap-2 shadow-lg shadow-primary/20"
-              >
+              <Button onClick={() => setIsDialogOpen(true)} className="gap-2 shadow-lg shadow-primary/20">
                 <Plus className="h-4 w-4" />
                 Create Your First List
               </Button>
@@ -177,18 +168,16 @@ export function Dashboard() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 relative">
                   <div className="flex-1">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      {list.name}
-                    </CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2">{list.name}</CardTitle>
                     <CardDescription className="mt-1">
                       Created {new Date(list.created_at).toLocaleDateString()}
                     </CardDescription>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="h-4 w-4" />
