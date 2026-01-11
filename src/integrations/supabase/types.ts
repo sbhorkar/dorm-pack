@@ -14,7 +14,204 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          list_id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          list_id: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          list_id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "packing_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      items: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          is_bought: boolean
+          is_packed: boolean
+          name: string
+          notes: string | null
+          price: number | null
+          size: string | null
+          sort_order: number
+          store_link: string | null
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          is_bought?: boolean
+          is_packed?: boolean
+          name: string
+          notes?: string | null
+          price?: number | null
+          size?: string | null
+          sort_order?: number
+          store_link?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          is_bought?: boolean
+          is_packed?: boolean
+          name?: string
+          notes?: string | null
+          price?: number | null
+          size?: string | null
+          sort_order?: number
+          store_link?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      list_suggestions: {
+        Row: {
+          category_name: string | null
+          created_at: string
+          id: string
+          item_name: string
+          list_id: string
+          notes: string | null
+          status: string
+          suggested_by: string | null
+        }
+        Insert: {
+          category_name?: string | null
+          created_at?: string
+          id?: string
+          item_name: string
+          list_id: string
+          notes?: string | null
+          status?: string
+          suggested_by?: string | null
+        }
+        Update: {
+          category_name?: string | null
+          created_at?: string
+          id?: string
+          item_name?: string
+          list_id?: string
+          notes?: string | null
+          status?: string
+          suggested_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "list_suggestions_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "packing_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packing_lists: {
+        Row: {
+          allow_editing: boolean
+          allow_suggestions: boolean
+          created_at: string
+          description: string | null
+          id: string
+          is_shared: boolean
+          name: string
+          share_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allow_editing?: boolean
+          allow_suggestions?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_shared?: boolean
+          name: string
+          share_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allow_editing?: boolean
+          allow_suggestions?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_shared?: boolean
+          name?: string
+          share_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          selected_college: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          selected_college?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          selected_college?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
