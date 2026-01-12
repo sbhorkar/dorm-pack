@@ -6,6 +6,7 @@ import { categoryTemplates, inferItemSize } from '@/lib/colleges';
 import { ShareDialog } from '@/components/sharing/ShareDialog';
 import { AddItemDialog } from '@/components/items/AddItemDialog';
 import { SuggestionsPanel } from '@/components/suggestions/SuggestionsPanel';
+import { getSafeUrl } from '@/lib/urlSecurity';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -475,9 +476,9 @@ export function PackingListView() {
                                   ${item.price.toFixed(2)}
                                 </Badge>
                               )}
-                              {item.store_link && (
+                              {getSafeUrl(item.store_link) && (
                                 <a 
-                                  href={item.store_link} 
+                                  href={getSafeUrl(item.store_link)!} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
                                   onClick={(e) => e.stopPropagation()}
