@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { getSafeUrl } from '@/lib/urlSecurity';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -408,9 +409,9 @@ export default function SharedListPage() {
                                 ${item.price.toFixed(2)}
                               </Badge>
                             )}
-                            {item.store_link && (
+                            {getSafeUrl(item.store_link) && (
                               <a 
-                                href={item.store_link} 
+                                href={getSafeUrl(item.store_link)!} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="text-xs text-primary hover:underline flex items-center gap-1"

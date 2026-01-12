@@ -88,8 +88,9 @@ export function AddItemDialog({
 
   const isValidUrl = (str: string) => {
     try {
-      new URL(str);
-      return true;
+      const parsed = new URL(str);
+      // Only allow http and https protocols to prevent XSS
+      return ['http:', 'https:'].includes(parsed.protocol);
     } catch {
       return false;
     }

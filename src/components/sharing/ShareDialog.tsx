@@ -38,7 +38,8 @@ export function ShareDialog({ open, onOpenChange, list, onUpdate }: ShareDialogP
   }, [list]);
 
   const generateShareToken = () => {
-    const token = crypto.randomUUID().slice(0, 8);
+    // Generate a 32-character token (128 bits of entropy) for secure sharing
+    const token = crypto.randomUUID().replace(/-/g, '');
     setShareToken(token);
     return token;
   };
